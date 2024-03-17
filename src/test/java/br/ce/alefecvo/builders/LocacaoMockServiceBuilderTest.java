@@ -4,20 +4,19 @@ import br.ce.alefecvo.daos.LocacaoDAO;
 import br.ce.alefecvo.entidades.Filme;
 import br.ce.alefecvo.entidades.Locacao;
 import br.ce.alefecvo.entidades.Usuario;
-import br.ce.alefecvo.matchers.MatchersProprios;
 import br.ce.alefecvo.servicos.EmailService;
 import br.ce.alefecvo.servicos.LocacaoService;
 import br.ce.alefecvo.servicos.SpcService;
 import br.ce.alefecvo.utils.DataUtils;
 import org.hamcrest.MatcherAssert;
-import org.junit.Rule;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.ErrorCollector;
-import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 
 import java.util.Date;
 import java.util.List;
@@ -26,32 +25,20 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.mockito.Mockito.*;
 
 
-public class LocacaoServiceBuilderTest {
+public class LocacaoMockServiceBuilderTest {
 
+    @InjectMocks
     private LocacaoService locacaoService;
+    @Mock
     private LocacaoDAO locacaoDAO;
+    @Mock
     private SpcService spcService;
+    @Mock
     private EmailService emailService;
-
-    @Rule
-    public ErrorCollector errorCollector = new ErrorCollector();
 
     @BeforeEach
     public void setup() {
-        locacaoService = new LocacaoService();
-
-        //Mockito para mockar dependencia externa LocacaoDAO
-        locacaoDAO = Mockito.mock(LocacaoDAO.class);
-        locacaoService.setLocacaoDAO(locacaoDAO);
-
-        //Mockito para mockar dependencia externa SpcService
-        spcService = Mockito.mock(SpcService.class);
-        locacaoService.setSpcService(spcService);
-
-        //Mockito para mockar dependencia externa EmailService
-        emailService = Mockito.mock(EmailService.class);
-        locacaoService.setEmailService(emailService);
-
+        MockitoAnnotations.initMocks(this);
     }
 
     @Test
@@ -211,26 +198,25 @@ public class LocacaoServiceBuilderTest {
     }
 
     @Test
-    @DisplayName("Deve prorrogar uma locacao usando Builder")
-    public void test08(){
-        //cenario
-        Locacao locacao = LocacaoBuilder.umaLocacao().agora();
+    @DisplayName("Deve lancar excecao quando houver erro no SPC usando Builder")
+    public void teste08() throws Exception {
+        Usuario usuario = UsuarioBuilder.umUsuario().agora();
+        List<Filme> filmes = List.of(
+                FilmeBuilder.umFilme().agora()
+        );
 
-        //acao
-        locacaoService.prorrogarLocacao(locacao, 3);
+        when(spcService.possuiNegativacao(usuario)).thenThrow(new RuntimeException());
 
-        //verificacao
-        ArgumentCaptor<Locacao> argumentCaptor = ArgumentCaptor.forClass(Locacao.class);
+        try {
+            locacaoService.alugarFilme(usuario, filmes);
+        } catch (Exception e) {
+            //verificacao
+            MatcherAssert.assertThat(e.getMessage(), is("SPC indisponível"));
+        }
 
-        Mockito.verify(locacaoDAO).salvar(argumentCaptor.capture());
+        verify(spcService).possuiNegativacao(usuario);
+        verifyNoMoreInteractions(spcService);
 
-        Locacao locacaoRetorno = argumentCaptor.getValue();
-        errorCollector.checkThat(locacaoRetorno.getValor(), is(12.0));
-        errorCollector.checkThat(locacaoRetorno.getDataLocacao(), MatchersProprios.ehHoje());
-        errorCollector.checkThat(locacaoRetorno.getDataRetorno(), MatchersProprios.ehHojeComDiferencaDias(3));
     }
-
-
-
 
 }

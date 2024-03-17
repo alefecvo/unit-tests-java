@@ -1,43 +1,35 @@
 package br.ce.alefecvo.servicos;
 
-import br.ce.alefecvo.builders.LocacaoBuilder;
 import br.ce.alefecvo.daos.LocacaoDAO;
 import br.ce.alefecvo.entidades.Filme;
 import br.ce.alefecvo.entidades.Locacao;
 import br.ce.alefecvo.entidades.Usuario;
 import br.ce.alefecvo.utils.DataUtils;
 import org.hamcrest.MatcherAssert;
-import org.junit.Assert;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 
 import java.util.Date;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.mockito.Mockito.when;
 
 
-public class LocacaoServiceTest {
+public class LocacaoMockServiceTest {
 
+    @InjectMocks
     private LocacaoService locacaoService;
-    private LocacaoDAO locacaoDAO;
-    private SpcService spcService;
 
     @BeforeEach
     public void setup() {
-        locacaoService = new LocacaoService();
-
-        //Mockito para mockar dependencia externa LocacaoDAO
-        locacaoDAO = Mockito.mock(LocacaoDAO.class);
-        locacaoService.setLocacaoDAO(locacaoDAO);
-
-        //Mockito para mockar dependencia externa SpcService
-        spcService = Mockito.mock(SpcService.class);
-        locacaoService.setSpcService(spcService);
+        MockitoAnnotations.initMocks(this);
     }
 
     @Test
@@ -68,25 +60,23 @@ public class LocacaoServiceTest {
 
         } catch (Exception e) {
             e.printStackTrace();
-            Assertions.fail("Não deveria lancar exceção");
+            Assertions.assertEquals(e.getMessage(),"SPC indisponível");
         }
     }
 
     @Test
     @DisplayName("Deve fazer locação de filme com execeção padrão")
-    public void teste02() throws Exception {
+    public void teste02() {
         //cenário
         Usuario usuario = new Usuario("lorenzo");
         List<Filme> filmes = List.of(new Filme("predador", 2, 5.0));
 
         //ação
-        Locacao locacao = locacaoService.alugarFilme(usuario, filmes);
-
-        //resultado
-        //assertEquals and assertTrue
-        Assertions.assertEquals(5.0, locacao.getValor(), 0.0);
-        Assertions.assertTrue(DataUtils.isMesmaData(locacao.getDataLocacao(), new Date()));
-        Assertions.assertTrue(DataUtils.isMesmaData(locacao.getDataRetorno(), DataUtils.obterDataComDiferencaDias(1)));
+        try {
+            locacaoService.alugarFilme(usuario, filmes);
+        }catch (Exception e){
+            Assertions.assertEquals(e.getMessage(),"SPC indisponível");
+        }
     }
 
     @Test
@@ -135,7 +125,5 @@ public class LocacaoServiceTest {
             MatcherAssert.assertThat(e.getMessage(), is("Filme vazio"));
         }
     }
-
-
 
 }

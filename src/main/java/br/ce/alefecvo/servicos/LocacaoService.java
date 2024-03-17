@@ -9,6 +9,7 @@ import br.ce.alefecvo.daos.LocacaoDAO;
 import br.ce.alefecvo.entidades.Filme;
 import br.ce.alefecvo.entidades.Locacao;
 import br.ce.alefecvo.entidades.Usuario;
+import br.ce.alefecvo.utils.DataUtils;
 
 public class LocacaoService {
 	private LocacaoDAO locacaoDAO;
@@ -28,9 +29,19 @@ public class LocacaoService {
 				throw new Exception("Filme sem estoque");
 		}
 
-		if (spcService.possuiNegativacao(usuario)){
+		boolean negativado;
+
+		try {
+			negativado = spcService.possuiNegativacao(usuario);
+		}
+		catch(Exception e){
+				throw new Exception("SPC indisponível");
+		}
+
+		if (negativado) {
 			throw new Exception("Usuário negativado");
 		}
+
 
 		Locacao locacao = new Locacao();
 		locacao.setFilme(filmes);
@@ -57,9 +68,10 @@ public class LocacaoService {
 	public void notificarAtrasos(){
 		List<Locacao> locacoes = locacaoDAO.obterLocacoesPendentes();
 		for (Locacao locacao: locacoes) {
-			emailService.notificarAtraso(locacao.getUsuario());
-
-		}
+//			if(locacao.getDataRetorno().before(new Date())) {
+				emailService.notificarAtraso(locacao.getUsuario());
+			}
+//		}
 	}
 
 
@@ -72,6 +84,17 @@ public class LocacaoService {
 	}
 	public void setEmailService(EmailService emailService) {
 		this.emailService = emailService;
+	}
+
+	public void prorrogarLocacao(Locacao locacao, int dias){
+		Locacao novaLocacao = new Locacao();
+		novaLocacao.setUsuario(locacao.getUsuario());
+		novaLocacao.setFilme(locacao.getFilme());
+		novaLocacao.setDataLocacao(new Date());
+		novaLocacao.setDataRetorno(DataUtils.obterDataComDiferencaDias(dias));
+		novaLocacao.setValor(locacao.getValor() * dias);
+		locacaoDAO.salvar(novaLocacao);
+
 	}
 
 }

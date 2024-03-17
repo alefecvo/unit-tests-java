@@ -18,14 +18,21 @@ public class LocacaoBuilder {
 
     public static LocacaoBuilder umaLocacao(){
         LocacaoBuilder builder = new LocacaoBuilder();
-        builder.locacao = new Locacao();
-        builder.locacao.setUsuario(umUsuario().agora());
-        builder.locacao.setFilme(List.of(umFilme().agora()));
-        builder.locacao.setDataLocacao(new Date());
-        builder.locacao.setDataLocacao(DataUtils.obterDataComDiferencaDias(1));
-        builder.locacao.setValor(4.0);
+        inicializarDadosPadroes(builder);
 
         return builder;
+    }
+
+    public static void inicializarDadosPadroes(LocacaoBuilder builder){
+        builder.locacao = new Locacao();
+        Locacao elemento = builder.locacao;
+
+        elemento.setUsuario(umUsuario().agora());
+        elemento.setFilme(List.of(umFilme().agora()));
+        elemento.setDataLocacao(new Date());
+        elemento.setDataLocacao(DataUtils.obterDataComDiferencaDias(1));
+        elemento.setValor(4.0);
+
     }
 
     public Locacao agora(){
@@ -39,6 +46,12 @@ public class LocacaoBuilder {
 
     public LocacaoBuilder comUsuario(Usuario valor) {
         this.locacao.setUsuario(valor);
+        return this;
+    }
+
+    public LocacaoBuilder atrasada() {
+        this.locacao.setDataLocacao(DataUtils.obterDataComDiferencaDias(-4));
+        this.locacao.setDataRetorno(DataUtils.obterDataComDiferencaDias(-2));
         return this;
     }
 

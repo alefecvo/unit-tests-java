@@ -4,5 +4,5 @@ import br.ce.alefecvo.entidades.Usuario;
 
 public interface SpcService {
 
-    boolean possuiNegativacao(Usuario usuario);
+    boolean possuiNegativacao(Usuario usuario) throws Exception;
 }

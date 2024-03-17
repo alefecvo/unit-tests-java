@@ -14,6 +14,7 @@
     <hamcrest.version>2.2</hamcrest.version>
     <junit.version>4.13.1</junit.version>
     <mockito-core.version>5.10.0</mockito-core.version>
+    <powermock.mockito.version>1.6.6</powermock.mockito.version>
   </properties>
 
   <dependencies>
@@ -43,6 +44,18 @@
       <artifactId>mockito-core</artifactId>
       <version>${mockito-core.version}</version>
       <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.powermock</groupId>
+      <artifactId>powermock-api-mockito</artifactId>
+      <version>${powermock.mockito.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.powermock</groupId>
+      <artifactId>powermock-module-junit4</artifactId>
+      <version>${powermock.mockito.version}</version>
     </dependency>
   </dependencies>
 </project>
